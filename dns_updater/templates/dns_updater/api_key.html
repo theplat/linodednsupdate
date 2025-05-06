@@ -1,0 +1,30 @@
+{% extends "dns_updater/base.html" %}
+
+{% block title %}Enter API Key - {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Enter Linode API Key</h2>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        {{ form.api_key.label_tag }}
+                        {{ form.api_key }}
+                        {% if form.api_key.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ form.api_key.errors }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    <button type="submit" class="btn btn-primary">Save API Key</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

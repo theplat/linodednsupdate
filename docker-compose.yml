@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+    environment:
+      - DEBUG=1
+      - SECRET_KEY=your-secret-key-here
+      - ALLOWED_HOSTS=localhost,127.0.0.1
+      - LINODE_API_KEY=${LINODE_API_KEY}
+      - UPDATE_INTERVAL=300
+    command: >
+      sh -c "python manage.py migrate --noinput &&
+             python manage.py update_dns &
+             python manage.py runserver 0.0.0.0:8000"
+
+  db:
+    image: postgres:15
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_DB=linodednsupdate
+      - POSTGRES_USER=linodednsupdate
+      - POSTGRES_PASSWORD=linodednsupdate
+
+volumes:
+  postgres_data: 

@@ -1,0 +1,49 @@
+{% extends "dns_updater/base.html" %}
+
+{% block title %}Domains - {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h2 class="card-title">Your Linode Domains</h2>
+    </div>
+    <div class="card-body">
+        {% if domains %}
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Domain Name</th>
+                        <th>Type</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for domain in domains %}
+                    <tr>
+                        <td>{{ domain.domain }}</td>
+                        <td>{{ domain.type }}</td>
+                        <td>
+                            <span class="badge {% if domain.status == 'active' %}bg-success{% else %}bg-warning{% endif %}">
+                                {{ domain.status }}
+                            </span>
+                        </td>
+                        <td>
+                            <a href="{% url 'record-list' domain.id %}" class="btn btn-primary btn-sm">
+                                View Records
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="alert alert-info">
+            No domains found. Please make sure your API key has the correct permissions.
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %} 

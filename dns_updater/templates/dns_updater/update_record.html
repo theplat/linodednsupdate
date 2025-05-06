@@ -1,0 +1,51 @@
+{% extends "dns_updater/base.html" %}
+
+{% block title %}Update Record - {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Update IP Address</h2>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label">Record Name</label>
+                        <input type="text" class="form-control" value="{{ record.name }}" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Current IP</label>
+                        <input type="text" class="form-control" value="{{ record.target }}" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label for="ip_address" class="form-label">New IP Address</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="ip_address" name="ip_address" value="{{ current_ip }}" required>
+                            <button type="button" class="btn btn-outline-secondary" onclick="getCurrentIP()">Get Current IP</button>
+                        </div>
+                    </div>
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">Update IP</button>
+                        <a href="{% url 'record-list' domain_id %}" class="btn btn-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+async function getCurrentIP() {
+    try {
+        const response = await fetch('https://icanhazip.com');
+        const ip = await response.text();
+        document.getElementById('ip_address').value = ip.trim();
+    } catch (error) {
+        alert('Failed to get current IP address. Please try again.');
+    }
+}
+</script>
+{% endblock %} 

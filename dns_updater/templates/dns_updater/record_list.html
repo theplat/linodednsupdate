@@ -1,0 +1,45 @@
+{% extends "dns_updater/base.html" %}
+
+{% block title %}DNS Records - {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h2 class="card-title">A Records</h2>
+    </div>
+    <div class="card-body">
+        {% if records %}
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Target</th>
+                        <th>TTL</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for record in records %}
+                    <tr>
+                        <td>{{ record.name }}</td>
+                        <td>{{ record.target }}</td>
+                        <td>{{ record.ttl_sec }}s</td>
+                        <td>
+                            <a href="{% url 'update-record' domain_id record.id %}" class="btn btn-primary btn-sm">
+                                Update IP
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="alert alert-info">
+            No A records found for this domain.
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %} 
