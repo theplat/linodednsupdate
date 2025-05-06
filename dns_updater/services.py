@@ -1,8 +1,6 @@
 import requests
-from django.conf import settings
 from typing import Optional, Dict, Any, List
 import logging
-from .models import APIKey
 
 logger = logging.getLogger(__name__)
 
@@ -10,20 +8,14 @@ logger = logging.getLogger(__name__)
 class LinodeAPIService:
     BASE_URL = "https://api.linode.com/v4"
     
-    def __init__(self, user=None):
-        self.user = user
-        self.api_key = None
+    def __init__(self, api_key=None):
+        self.api_key = api_key
         self.session = requests.Session()
-        if user:
-            try:
-                api_key = APIKey.objects.get(user=user)
-                self.api_key = api_key.get_key()
-                self.session.headers.update({
-                    "Authorization": f"Bearer {self.api_key}",
-                    "Content-Type": "application/json"
-                })
-            except APIKey.DoesNotExist:
-                raise ValueError("No API key configured for this user")
+        if api_key:
+            self.session.headers.update({
+                "Authorization": f"Bearer {api_key}",
+                "Content-Type": "application/json"
+            })
 
     def test_api_key(self, api_key: str) -> bool:
         """Test if the provided API key is valid."""
@@ -39,43 +31,37 @@ class LinodeAPIService:
         except requests.exceptions.RequestException:
             return False
 
-    def _make_request(self, method: str, endpoint: str, data: Optional[Dict] = None) -> Dict[str, Any]:
-        """Make a request to the Linode API."""
-        if not self.api_key:
-            raise ValueError("API key is not configured")
-            
-        url = f"{self.BASE_URL}/{endpoint}"
-        try:
-            response = self.session.request(method, url, json=data)
-            response.raise_for_status()
-            return response.json()
-        except requests.exceptions.RequestException as e:
-            logger.error(f"Error making request to Linode API: {e}")
-            raise
-
     def get_domains(self) -> List[Dict[str, Any]]:
-        """Get all domains in the account."""
-        return self._make_request("GET", "domains")["data"]
+        """Get all domains from Linode."""
+        if not self.api_key:
+            raise ValueError("API key is required")
+        response = self.session.get(f"{self.BASE_URL}/domains")
+        response.raise_for_status()
+        return response.json().get('data', [])
 
     def get_domain_records(self, domain_id: int) -> List[Dict[str, Any]]:
-        """Get all DNS records for a domain."""
-        return self._make_request("GET", f"domains/{domain_id}/records")["data"]
+        """Get all records for a domain."""
+        if not self.api_key:
+            raise ValueError("API key is required")
+        response = self.session.get(f"{self.BASE_URL}/domains/{domain_id}/records")
+        response.raise_for_status()
+        return response.json().get('data', [])
 
-    def update_domain_record(self, domain_id: int, record_id: int, target: str) -> Dict[str, Any]:
-        """Update a DNS record's target (IP address)."""
-        data = {"target": target}
-        return self._make_request(
-            "PUT",
-            f"domains/{domain_id}/records/{record_id}",
-            data=data
-        )
+    def update_domain_record(self, domain_id: int, record_id: int, new_ip: str) -> Dict[str, Any]:
+        """Update a domain record with a new IP address."""
+        if not self.api_key:
+            raise ValueError("API key is required")
+        data = {'target': new_ip}
+        response = self.session.put(f"{self.BASE_URL}/domains/{domain_id}/records/{record_id}", json=data)
+        response.raise_for_status()
+        return response.json()
 
     def get_current_ip(self) -> str:
         """Get the current public IP address."""
         try:
-            response = requests.get("https://icanhazip.com")
+            response = requests.get('https://icanhazip.com')
             response.raise_for_status()
             return response.text.strip()
         except requests.exceptions.RequestException as e:
-            logger.error(f"Error getting current IP address: {e}")
+            logger.error(f"Error getting current IP: {e}")
             raise 
