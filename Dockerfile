@@ -16,9 +16,15 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy project
 COPY . .
 
+# Make start script executable
+RUN chmod +x start.sh
+
 # Create a non-root user
 RUN useradd -m appuser && chown -R appuser:appuser /app
 USER appuser
 
 # Expose the port
-EXPOSE 8000 
+EXPOSE 8000
+
+# Command to run the application
+CMD ["./start.sh"] 
