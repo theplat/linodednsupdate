@@ -23,11 +23,12 @@ from dns_updater.views import (
     RecordListView,
     UpdateRecordView
 )
+from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('accounts/login/', auth_views.LoginView.as_view(), name='login'),
-    path('logout/', auth_views.LogoutView.as_view(next_page='login'), name='logout'),
+    path('accounts/logout/', auth_views.LogoutView.as_view(next_page='login'), name='logout'),
     path('accounts/password_change/', auth_views.PasswordChangeView.as_view(
         template_name='registration/password_change.html',
         success_url='/'
@@ -40,3 +41,5 @@ urlpatterns = [
     path('domains/<int:domain_id>/records/', RecordListView.as_view(), name='record-list'),
     path('domains/<int:domain_id>/records/<int:record_id>/update/', UpdateRecordView.as_view(), name='update-record'),
 ]
+
+urlpatterns += staticfiles_urlpatterns()
